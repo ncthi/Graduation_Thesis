@@ -1,0 +1,17 @@
+version: "3.8"
+
+services:
+  backend:
+    build: ./Backend
+    ports:
+      - "8000:8000"
+
+  web-ui:
+    build: ./Frontend
+    ports:
+      - "3000:3000"
+
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"

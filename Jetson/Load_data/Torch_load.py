@@ -99,13 +99,15 @@ class MyDataset(data.Dataset):
 
 
 class Load_data:
-    def __init__(self,phase="Train",image_size=224,batch_size=32,n_splits=5,task="binary"):
+    def __init__(self,phase="Train",image_size=224,batch_size=32,n_splits=5,task="binary",data_path=None):
         self.phase=phase
         self.image_size=image_size
         self.batch_size=batch_size
         self.kfold = KFold(n_splits=n_splits, shuffle=True)
         self.task=task
-        if task=="binary":
+        if data_path:
+            self.data_path=data_path
+        elif task=="binary":
             self.data_path = "/home/jupyter-iec_thicao/Dataset/Road_binary"
         else:
             self.data_path = "/home/jupyter-iec_thicao/Dataset/Road_multiclass"

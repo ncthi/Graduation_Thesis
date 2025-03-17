@@ -99,8 +99,8 @@ class MyDataset(data.Dataset):
 
 
 class Load_data:
-    def __init__(self,mode="Train",image_size=224,batch_size=32,n_splits=5,task="binary"):
-        self.mode=mode
+    def __init__(self,phase="Train",image_size=224,batch_size=32,n_splits=5,task="binary"):
+        self.phase=phase
         self.image_size=image_size
         self.batch_size=batch_size
         self.kfold = KFold(n_splits=n_splits, shuffle=True)
@@ -116,22 +116,28 @@ class Load_data:
         for path in glob.glob(target_path):
             path_list.append(path)
         return path_list
+        
+    def get_test_dataloader(self):
+        test_list = self.make_datapath_list("Test")
+        test_dataset = MyDataset(test_list, transform=ImageTransform(self.image_size), phase="Test",task=self.task)
+        test_dataloader = torch.utils.data.DataLoader(test_dataset, self.batch_size, shuffle=True)
+        return {"Test": test_dataloader}
 
+    def get_train_dataloader(self):
+        data_list = self.make_datapath_list("Train")
+        for train_ids,val_ids in self.kfold.split(data_list ):
+            train_list=Subset(data_list, train_ids)
+            val_list=Subset(data_list,val_ids)
+            train_dataset = MyDataset(train_list, transform=ImageTransform(self.image_size), phase="Train",task=self.task)
+            val_dataset = MyDataset(val_list, transform=ImageTransform(self.image_size), phase="Val",task=self.task)
+            train_dataloader = torch.utils.data.DataLoader(train_dataset, self.batch_size, shuffle=True)
+            val_dataloader = torch.utils.data.DataLoader(val_dataset, self.batch_size, shuffle=False)
+            dataloader_dict = {"Train":train_dataloader, "Val":val_dataloader}
+            yield dataloader_dict
     def __call__(self):
-        if self.mode!="Train":
-            test_list = self.make_datapath_list("Test")
-            test_dataset = MyDataset(test_list, transform=ImageTransform(self.image_size), phase="Test",task=self.task)
-            test_dataloader = torch.utils.data.DataLoader(test_dataset, self.batch_size, shuffle=True)
-            return test_dataloader
+        if self.phase == "Test":
+            return self.get_test_dataloader()
         else:
-            data_list = self.make_datapath_list("Train")
-            for train_ids,val_ids in self.kfold.split(data_list ):
-                train_list=Subset(data_list, train_ids)
-                val_list=Subset(data_list,val_ids)
-                train_dataset = MyDataset(train_list, transform=ImageTransform(self.image_size), phase="Train",task=self.task)
-                val_dataset = MyDataset(val_list, transform=ImageTransform(self.image_size), phase="Val",task=self.task)
-                train_dataloader = torch.utils.data.DataLoader(train_dataset, self.batch_size, shuffle=True)
-                val_dataloader = torch.utils.data.DataLoader(val_dataset, self.batch_size, shuffle=False)
-                dataloader_dict = {"Train":train_dataloader, "Val":val_dataloader}
-                yield dataloader_dict
+            return self.get_train_dataloader() 
+            
                 

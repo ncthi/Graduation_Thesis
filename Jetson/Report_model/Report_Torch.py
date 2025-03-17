@@ -42,6 +42,7 @@ class Class_Report:
         predicts=[]
         label_co=[]
         for inputs, labels in tqdm(self.data):
+            # print("inputs:",inputs)
             inputs=inputs.to(self.device)
             output = self.model(inputs)
             label_co=np.concatenate((label_co,labels))

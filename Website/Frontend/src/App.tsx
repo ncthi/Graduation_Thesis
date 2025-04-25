@@ -1,38 +1,22 @@
-import { useState, useEffect } from 'react'
-import './App.css'
+import { Route, Routes, Navigate } from "react-router-dom";
+import Dashboard from "./pages/Dashboard";
+import ImageManagement from "./pages/ImageManagement";
+import { PageEnum } from "./hooks/page.enum";
+import { Layout } from "../src/pages/Layout"; // Đường dẫn tùy theo dự án bạn
 
-interface Image {
-  timestamp: string;
-  filename: string;
-  result: {
-    damage_type: string;
-    confidence: number;
-  };
-}
 function App() {
-  const [, setImages] = useState<Image[]>([]);
-
-  useEffect(() => {
-      fetch("/api/v1/images")
-          .then(res => res.json())
-          .then(setImages);
-  }, []);
-
   return (
-      <div>
-          <h1>Road Quality Monitoring</h1>
-          {/* <video src="" controls autoPlay />
-          <ul>
-              {images.map(img => (
-                  <li key={img.timestamp}>
-                      <img src={`/uploads/${img.filename}`} width="200" />
-                      <p>{img.result.damage_type} - {img.result.confidence}</p>
-                  </li>
-              ))}
-          </ul> */}
-      </div>
+    <Routes>
+      {/* Trang mặc định chuyển về ImageManagement */}
+      <Route path="/" element={<Navigate to={PageEnum.IMAGEMANAGEMENT} replace />} />
+
+      {/* Layout wrapper: bọc các trang con */}
+      <Route element={<Layout />}>
+        <Route path={PageEnum.IMAGEMANAGEMENT} element={<ImageManagement />} />
+        <Route path={PageEnum.DASHBOARD} element={<Dashboard />} />
+      </Route>
+    </Routes>
   );
 }
 
-
-export default App
+export default App;

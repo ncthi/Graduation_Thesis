@@ -1,2 +1,0 @@
-from .resevit_road import restevit_road_cls
-from .resevit_road_reduce_v1 import restevit_road_cls as restevit_road_cls_lightweight

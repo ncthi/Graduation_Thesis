@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="9a52b8f7-ae65-4314-931b-db59c6644f3c" name="jetson">
+        <fileTransfer rootFolder="/home/caothi" accessType="SFTP" host="192.168.137.100" port="22" sshConfigId="e7ce7d36-af03-4203-ba88-e21c67f9d25d" sshConfig="caothi@192.168.137.100:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+      <webServer id="6f3f2d1d-5e72-4b1c-aa78-52bb5c700cc7" name="rasp">
+        <fileTransfer rootFolder="/home/rasp" accessType="SFTP" host="192.168.137.81" port="22" sshConfigId="f00eeadf-bbf2-4620-a272-3fd86d510da5" sshConfig="rasp@192.168.137.81:22 password">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

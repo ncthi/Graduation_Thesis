@@ -1,17 +1,27 @@
-version: "3.8"
+version: '3.8'
 
 services:
   backend:
     build: ./Backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./Backend/uploads_data:/app/uploads
+    environment:
+      - PYTHONUNBUFFERED=1 
 
-  web-ui:
+  frontend:
     build: ./Frontend
     ports:
-      - "3000:3000"
-
-  nginx:
-    build: ./nginx
-    ports:
-      - "80:80"
+      - "300:3000" 
+    volumes:
+      - ./Frontend/src:/app/src 
+      - /app/node_modules
+    depends_on:
+      - backend 
+    environment:
+      - CHOKIDAR_USEPOLLING=true 
+      - WATCHPACK_POLLING=true 
+networks:
+  default:
+    driver: bridge

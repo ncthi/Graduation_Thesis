@@ -1,0 +1,1 @@
+from .models.efficientvit.cls import efficientvit_cls_b1,efficientvit_cls_b2,efficientvit_cls_b3

@@ -298,6 +298,9 @@ export default function Dashboard() {
   }
 
   return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      {/* Các component nội dung khác tại đây */}
     <div className="max-w-7xl mx-auto p-6">
       {/* Dashboard Header */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">

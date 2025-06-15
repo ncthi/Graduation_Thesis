@@ -3,9 +3,9 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="9a52b8f7-ae65-4314-931b-db59c6644f3c" name="jetson">
-        <fileTransfer rootFolder="/home/caothi" accessType="SFTP" host="192.168.137.100" port="22" sshConfigId="e7ce7d36-af03-4203-ba88-e21c67f9d25d" sshConfig="caothi@192.168.137.100:22 password">
+        <fileTransfer rootFolder="/home/caothi" accessType="SFTP" sshConfigId="e7ce7d36-af03-4203-ba88-e21c67f9d25d" sshConfig="caothi@192.168.137.100:22 password">
           <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>

@@ -1,9 +1,9 @@
 import { useState, useEffect, useMemo } from "react";
 import axiosRequest from "../config/axios.config";
 import { timestampToDate } from "../config/timestamp.config";
-import {BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip,
-  Legend, ResponsiveContainer, Area, AreaChart,} from "recharts";
-import { FaCalendarAlt,FaChartPie, FaChartBar, FaMapMarkerAlt, FaImage, FaCalendarDay, FaDownload, FaSyncAlt } from "react-icons/fa";
+import { XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Area, AreaChart,} from "recharts";
+import { FaCalendarAlt, FaMapMarkerAlt, FaImage, FaCalendarDay, FaDownload, FaSyncAlt } from "react-icons/fa";
 import { FaRoadCircleExclamation, FaRoadCircleCheck  } from "react-icons/fa6";
 type ImageItem = {
   filename: string;
@@ -298,6 +298,9 @@ export default function Dashboard() {
   }
 
   return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold">Dashboard</h1>
+      {/* Các component nội dung khác tại đây */}
     <div className="max-w-7xl mx-auto p-6">
       {/* Dashboard Header */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
@@ -485,197 +488,76 @@ export default function Dashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     tick={{ fontSize: 12 }}
                     axisLine={{ stroke: '#E5E7EB' }}
                     tickLine={false}
                     tickFormatter={(value) => formatDateForDisplay(value)}
                   />
-                  <YAxis 
-                    tick={{ fontSize: 12 }} 
+                  <YAxis
+                    tick={{ fontSize: 12 }}
                     axisLine={{ stroke: '#E5E7EB' }}
                     tickLine={false}
                   />
-                  <Tooltip 
+                  <Tooltip
                     labelFormatter={(value) => `Date: ${formatDateForDisplay(value)}`}
-                    contentStyle={{ 
-                      backgroundColor: "#fff", 
+                    contentStyle={{
+                      backgroundColor: "#fff",
                       border: "1px solid #E5E7EB",
                       borderRadius: "0.5rem",
                       boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
                     }}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="count" 
-                    stroke="#059669" 
+                  <Area
+                    type="monotone"
+                    dataKey="count"
+                    stroke="#059669"
+                    fillOpacity={1}
+                    fill="url(#colorCount)"
                     strokeWidth={2}
-                    fillOpacity={1} 
-                    fill="url(#colorCount)" 
-                    name="Images" 
+                    dot={{ stroke: '#059669', strokeWidth: 2, r: 4, fill: '#fff' }}
+                    activeDot={{ r: 6, fill: '#059669', stroke: '#fff', strokeWidth: 2 }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                No data available for the selected date range
+              <div className="flex items-center justify-center h-full text-gray-500">
+                No data available for the selected period.
               </div>
             )}
           </div>
         </div>
-        
-        {/* Images by Prediction Status */}
+
+        {/* Prediction Distribution (Placeholder) */}
         <div className="bg-white rounded-xl shadow-md p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <FaChartPie className="mr-2 text-gray-500" />
-            Road Condition Analysis
+            {/* <FaChartPie className="mr-2 text-gray-500" /> */}
+            Prediction Distribution
           </h3>
           <div className="h-80">
-            {stats.totalImages > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData.predictionData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={120}
-                    innerRadius={60}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  >
-                    {chartData.predictionData.map((_, index) => {
-                      const COLORS = ["#EF4444", "#10B981", "#6B7280"];
-                      return <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />;
-                    })}
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [`${value} images`, ""]}
-                    contentStyle={{ 
-                      backgroundColor: "#fff", 
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                    }}
-                  />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                No data available for the selected filters
-              </div>
-            )}
+            {/* Placeholder for Pie Chart */}
+            <div className="flex items-center justify-center h-full text-gray-400">
+              Chart coming soon...
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Additional Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Location Data Availability */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <FaMapMarkerAlt className="mr-2 text-gray-500" />
-            Location Data Availability
-          </h3>
-          <div className="h-80">
-            {stats.totalImages > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={chartData.locationData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    outerRadius={120}
-                    innerRadius={60}
-                    fill="#8884d8"
-                    dataKey="value"
-                    nameKey="name"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  >
-                    <Cell fill="#FBBF24" />
-                    <Cell fill="#9CA3AF" />
-                  </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [`${value} images`, ""]}
-                    contentStyle={{ 
-                      backgroundColor: "#fff", 
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                    }}
-                  />
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                No data available for the selected filters
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Daily Analysis Results */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-            <FaChartBar className="mr-2 text-gray-500" />
-            Daily Analysis Results
-          </h3>
-          <div className="h-80">
-            {chartData.imagesByDate.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData.imagesByDate}
-                  margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  barSize={20}
-                >
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                  <XAxis 
-                    dataKey="date" 
-                    scale="point" 
-                    padding={{ left: 10, right: 10 }} 
-                    tick={{ fontSize: 12 }}
-                    axisLine={{ stroke: '#E5E7EB' }}
-                    tickLine={false}
-                    tickFormatter={(value) => formatDateForDisplay(value)}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12 }} 
-                    axisLine={{ stroke: '#E5E7EB' }}
-                    tickLine={false}
-                  />
-                  <Tooltip 
-                    labelFormatter={(value) => `Date: ${formatDateForDisplay(value)}`}
-                    formatter={(value: number) => [`${value} images`, "Count"]}
-                    contentStyle={{ 
-                      backgroundColor: "#fff", 
-                      border: "1px solid #E5E7EB",
-                      borderRadius: "0.5rem",
-                      boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)"
-                    }}
-                  />
-                  <Legend />
-                  <Bar 
-                    dataKey="count" 
-                    name="Image Count" 
-                    fill="#3B82F6" 
-                    radius={[4, 4, 0, 0]} 
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="h-full flex items-center justify-center text-gray-500">
-                No data available for the selected date range
-              </div>
-            )}
+      {/* Location Data (Placeholder) */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          {/* <FaMapMarkerAlt className="mr-2 text-gray-500" /> */}
+          Location Data Overview
+        </h3>
+        <div className="h-60">
+          {/* Placeholder for Map or Location-based chart */}
+          <div className="flex items-center justify-center h-full text-gray-400">
+            Map or location chart coming soon...
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

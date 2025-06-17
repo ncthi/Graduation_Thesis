@@ -257,12 +257,12 @@ export default function Dashboard() {
 
   // Generate CSV data for export
   const generateCsvData = () => {
-    const headers = "Date,Filename,Prediction,Has Location\n";
+    const headers = "Date,Filename,Prediction,Location (Decimal)\n";
     const rows = filteredImages.map(img => {
       const fullDate = timestampToDate(img.filename);
       const date = extractDatePart(fullDate);
       const prediction = img.metadata?.Prediction || "No Prediction";
-      const hasLocation = img.metadata?.Location ? "Yes" : "No";
+      const hasLocation = img.metadata?.Location;
       return `${date},"${img.filename}",${prediction},${hasLocation}`;
     }).join("\n");
     

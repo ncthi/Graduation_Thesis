@@ -44,8 +44,9 @@ export default function ImageManagement() {
       setLoading(true);
       try {
         const res = await axiosRequest.get("list-images/");
-        setImages(res.data.images);
-        setFilteredImages(res.data.images);
+        const imageList = Array.isArray(res.data.images) ? res.data.images : [];
+        setImages(imageList);
+        setFilteredImages(imageList);
       } catch (error) {
         console.error("Error loading image list:", error);
         setError("Failed to load images. Please try again later.");

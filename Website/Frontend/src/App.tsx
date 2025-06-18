@@ -7,7 +7,7 @@ import { Layout } from "../src/pages/Layout";
 function App() {
   return (
     <Routes>
-      <Route path="/ResEViTRoad" element={<Navigate to={PageEnum.IMAGEMANAGEMENT} replace />} />
+      <Route path="/" element={<Navigate to={PageEnum.IMAGEMANAGEMENT} replace />} />
       <Route element={<Layout />}>
         <Route path={PageEnum.IMAGEMANAGEMENT} element={<ImageManagement />} />
         <Route path={PageEnum.DASHBOARD} element={<Dashboard />} />

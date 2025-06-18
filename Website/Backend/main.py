@@ -2,7 +2,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.api.upload import router as upload_router
 
-app = FastAPI()
+app = FastAPI(
+    root_path="/ResEViTRoad/api",
+    docs_url="/ResEViTRoad/docs",
+    redoc_url="/ResEViTRoad/redoc",
+    openapi_url="/ResEViTRoad/openapi.json"
+)
 
 app.add_middleware(
     CORSMiddleware,

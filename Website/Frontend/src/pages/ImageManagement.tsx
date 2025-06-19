@@ -353,7 +353,7 @@ export default function ImageManagement() {
                       className={`
                       px-2 py-1 text-xs font-bold uppercase rounded-full
                       ${
-                        img.metadata.Prediction.toLowerCase() === "damaged"
+                        img.metadata.Prediction.toLowerCase() === "bad road"
                           ? "bg-red-100 text-red-800"
                           : "bg-green-100 text-green-800"
                       }
@@ -400,7 +400,7 @@ export default function ImageManagement() {
                         </span>
                         <div
                           className={`font-semibold ${
-                            img.metadata.Prediction.toLowerCase() === "damaged"
+                            img.metadata.Prediction.toLowerCase() === "bad road"
                               ? "text-red-600"
                               : "text-green-600"
                           }`}
@@ -592,7 +592,7 @@ export default function ImageManagement() {
                       <div
                         className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${
                           selectedImage.metadata.Prediction.toLowerCase() ===
-                          "damaged"
+                          "bad road"
                             ? "bg-red-100 text-red-800"
                             : "bg-green-100 text-green-800"
                         }`}

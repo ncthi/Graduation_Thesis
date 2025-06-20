@@ -24,6 +24,41 @@ type ImageItem = {
   };
 };
 
+// Prediction colors mapping
+const PREDICTION_COLORS = {
+  "Asphalt bad": "#EF4444",
+  "Paved bad": "#F59E0B", 
+  "Unpaved bad": "#8B5CF6",
+  "Rain": "#3B82F6",
+};
+
+// Helper function to get prediction color
+const getPredictionColor = (prediction: string) => {
+  return PREDICTION_COLORS[prediction as keyof typeof PREDICTION_COLORS] || "#6B7280";
+};
+
+// Helper function to get prediction background color (lighter version)
+const getPredictionBgColor = (prediction: string) => {
+  const colorMap = {
+    "Asphalt bad": "#FEF2F2",
+    "Paved bad": "#FFFBEB",
+    "Unpaved bad": "#F5F3FF", 
+    "Rain": "#EFF6FF",
+  };
+  return colorMap[prediction as keyof typeof colorMap] || "#F9FAFB";
+};
+
+// Helper function to get prediction text color
+const getPredictionTextColor = (prediction: string) => {
+  const colorMap = {
+    "Asphalt bad": "#991B1B",
+    "Paved bad": "#92400E",
+    "Unpaved bad": "#5B21B6",
+    "Rain": "#1E40AF",
+  };
+  return colorMap[prediction as keyof typeof colorMap] || "#374151";
+};
+
 export default function ImageManagement() {
   const [images, setImages] = useState<ImageItem[]>([]);
   const [filteredImages, setFilteredImages] = useState<ImageItem[]>([]);
@@ -350,14 +385,14 @@ export default function ImageManagement() {
                 {img.metadata?.Prediction && (
                   <div className="absolute top-3 right-3">
                     <span
-                      className={`
-                      px-2 py-1 text-xs font-bold uppercase rounded-full
-                      ${
-                        img.metadata.Prediction.toLowerCase() === "bad road"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }
-                    `}
+                      className="px-2 py-1 text-xs font-bold uppercase rounded-full"
+                      style={{
+                        backgroundColor: getPredictionBgColor(img.metadata.Prediction),
+                        color: getPredictionTextColor(img.metadata.Prediction),
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                        borderColor: getPredictionColor(img.metadata.Prediction) + '40'
+                      }}
                     >
                       {img.metadata.Prediction}
                     </span>
@@ -399,11 +434,8 @@ export default function ImageManagement() {
                           Analysis Result:
                         </span>
                         <div
-                          className={`font-semibold ${
-                            img.metadata.Prediction.toLowerCase() === "bad road"
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
+                          className="font-semibold"
+                          style={{ color: getPredictionColor(img.metadata.Prediction) }}
                         >
                           {img.metadata.Prediction}
                         </div>
@@ -590,12 +622,14 @@ export default function ImageManagement() {
                     <div>
                       <h3 className="text-sm text-gray-500">Analysis Result</h3>
                       <div
-                        className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${
-                          selectedImage.metadata.Prediction.toLowerCase() ===
-                          "bad road"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
+                        className="inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium"
+                        style={{
+                          backgroundColor: getPredictionBgColor(selectedImage.metadata.Prediction),
+                          color: getPredictionTextColor(selectedImage.metadata.Prediction),
+                          borderWidth: '1px',
+                          borderStyle: 'solid',
+                          borderColor: getPredictionColor(selectedImage.metadata.Prediction) + '40'
+                        }}
                       >
                         {selectedImage.metadata.Prediction}
                       </div>

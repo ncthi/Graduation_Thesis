@@ -1,31 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import axiosRequest from "../config/axios.config";
 import { timestampToDate } from "../config/timestamp.config";
-import {
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  Area,
-  AreaChart,
-} from "recharts";
-import {
-  FaCalendarAlt,
-  FaChartPie,
-  FaChartBar,
-  FaMapMarkerAlt,
-  FaImage,
-  FaCalendarDay,
-  FaDownload,
-  FaSyncAlt,
-} from "react-icons/fa";
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart} from "recharts";
+import { FaCalendarAlt, FaChartPie, FaChartBar, FaMapMarkerAlt, FaImage, FaCalendarDay, FaDownload, FaSyncAlt} from "react-icons/fa";
 
 type ImageItem = {
   filename: string;
@@ -124,7 +101,7 @@ export default function Dashboard() {
           }
         } else {
           console.warn("API trả về images không hợp lệ:", res.data);
-          setImages([]); // fallback an toàn
+          setImages([]);
         }
       } catch (error) {
         console.error("Error loading image data:", error);
@@ -336,11 +313,9 @@ export default function Dashboard() {
     setFilterPrediction("");
   };
 
-  // Format date for display
   const formatDateForDisplay = (isoDate: string): string => {
     if (!isoDate) return "-";
 
-    // Convert YYYY-MM-DD to DD/MM/YYYY for display
     const [year, month, day] = isoDate.split("-");
     return `${day}/${month}/${year}`;
   };

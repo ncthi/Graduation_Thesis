@@ -1,8 +1,31 @@
 import { useState, useEffect, useMemo } from "react";
 import axiosRequest from "../config/axios.config";
 import { timestampToDate } from "../config/timestamp.config";
-import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart} from "recharts";
-import { FaCalendarAlt, FaChartPie, FaChartBar, FaMapMarkerAlt, FaImage, FaCalendarDay, FaDownload, FaSyncAlt} from "react-icons/fa";
+import {
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from "recharts";
+import {
+  FaCalendarAlt,
+  FaChartPie,
+  FaChartBar,
+  FaMapMarkerAlt,
+  FaImage,
+  FaCalendarDay,
+  FaDownload,
+  FaSyncAlt,
+} from "react-icons/fa";
 
 type ImageItem = {
   filename: string;
@@ -13,7 +36,7 @@ type ImageItem = {
 };
 interface DailyAnalysisItem {
   date: string;
-  [key: string]: number | string; 
+  [key: string]: number | string;
 }
 
 type DashboardStats = {
@@ -35,7 +58,7 @@ const BAR_COLORS = {
   "Asphalt bad": "#EF4444",
   "Paved bad": "#F59E0B",
   "Unpaved bad": "#8B5CF6",
-  "Rain": "#3B82F6",
+  Rain: "#3B82F6",
 };
 
 const extractDatePart = (vietnameseDateString: string): string => {
@@ -48,7 +71,6 @@ const extractDatePart = (vietnameseDateString: string): string => {
   const [day, month, year] = datePart.split("/");
   return `${year}-${month}-${day}`;
 };
-
 
 const isDateInRange = (
   dateStr: string,
@@ -78,24 +100,31 @@ export default function Dashboard() {
       setLoading(true);
       try {
         const res = await axiosRequest.get("list-images/");
-        setImages(res.data.images);
+        const imageData = res.data?.images;
 
-        // Set initial date range based on available data
-        if (res.data.images.length > 0) {
-          const dates = res.data.images
-            .map((img: ImageItem) => {
-              const fullDate = timestampToDate(img.filename);
-              return extractDatePart(fullDate);
-            })
-            .filter((date: string) => date !== "");
+        if (Array.isArray(imageData)) {
+          setImages(imageData);
 
-          if (dates.length > 0) {
-            dates.sort();
-            setDateRange({
-              start: dates[0],
-              end: dates[dates.length - 1],
-            });
+          // Set initial date range based on available data
+          if (imageData.length > 0) {
+            const dates = imageData
+              .map((img: ImageItem) => {
+                const fullDate = timestampToDate(img.filename);
+                return extractDatePart(fullDate);
+              })
+              .filter((date: string) => date !== "");
+
+            if (dates.length > 0) {
+              dates.sort();
+              setDateRange({
+                start: dates[0],
+                end: dates[dates.length - 1],
+              });
+            }
           }
+        } else {
+          console.warn("API trả về images không hợp lệ:", res.data);
+          setImages([]); // fallback an toàn
         }
       } catch (error) {
         console.error("Error loading image data:", error);
@@ -110,6 +139,8 @@ export default function Dashboard() {
 
   // Filter images based on date range and prediction
   const filteredImages = useMemo(() => {
+    if (!Array.isArray(images)) return [];
+
     return images.filter((img) => {
       const fullDate = timestampToDate(img.filename);
 

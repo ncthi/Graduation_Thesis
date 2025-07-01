@@ -67,8 +67,13 @@ async def list_images():
                                 location = match_loc.group(1).strip()
                         else: print(full_metadata)
                         map_label={
-                            0: "Bad road",
+                            0: "Asphalt bad",
                             1: "Good road",
+                            2: "Paved bad",
+                            3: "Paved good",
+                            4: "Rain",
+                            5: "Unpaved bad",
+                            6: "Unpaved good",
                         }
                         metadata = {
                             "Prediction": map_label[prediction],

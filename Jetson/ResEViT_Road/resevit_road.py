@@ -119,7 +119,3 @@ class ResEViT_road_cls(nn.Module):
         x=self.adaptive(x)
         x=self.classification(x)
         return x
-
-
-
-

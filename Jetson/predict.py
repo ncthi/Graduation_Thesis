@@ -4,7 +4,6 @@ import time
 import cv2
 from tqdm import tqdm
 from ResEViT_Road import ResEViT_road_cls
-from scipy.signal import wiener
 import piexif
 from PIL import Image
 from io import BytesIO
@@ -13,6 +12,8 @@ import serial
 import re
 from multiprocessing import Process, Queue
 from collections import OrderedDict
+import os
+import shutil
 
 # Device setup
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -29,37 +30,56 @@ def turn_on_gps(serial_port='/dev/ttyUSB2', baudrate=115200):
     except Exception as e:
         print("GPS Error:", e)
 
+
+
+def convert_to_decimal(coord_str, hemisphere_str, is_latitude=True):
+    try:
+        if is_latitude:
+            degrees = int(coord_str[:2])
+            minutes = float(coord_str[2:])
+        else:
+            degrees = int(coord_str[:3])
+            minutes = float(coord_str[3:])
+
+        decimal_coord = degrees + (minutes / 60)
+
+        if is_latitude and (hemisphere_str == 'S' or hemisphere_str == 's'):
+            decimal_coord *= -1
+        elif not is_latitude and (hemisphere_str == 'W' or hemisphere_str == 'w'):
+            decimal_coord *= -1
+
+        return decimal_coord
+    except (ValueError, IndexError): # Catch specific exceptions
+        return None
+
 def get_gps_location(serial_port='/dev/ttyUSB2', baudrate=115200):
     try:
         ser = serial.Serial(serial_port, baudrate, timeout=2)
         for _ in range(10):
             ser.write(b'AT+CGPSINFO\r')
-            time.sleep(0.2)
-            response = ser.read(ser.inWaiting()).decode(errors='ignore')
+            time.sleep(0.5) # Increased sleep slightly for response
+            response = ser.read(ser.inWaiting()).decode(errors='ignore') # Or ser.readline()
 
             if '+CGPSINFO:' in response:
-                match = re.search(r'\+CGPSINFO: ([^,]*),([^,]*),([^,]*),([^,]*),', response)
+                # Updated regex to capture hemisphere
+                match = re.search(r'\+CGPSINFO: ([^,]*),([NSns]),([^,]*),([EWew]),', response)
                 if match:
                     lat_raw = match.group(1)
+                    lat_hemisphere = match.group(2)
                     lon_raw = match.group(3)
+                    lon_hemisphere = match.group(4)
 
-                    if lat_raw and lon_raw:
-                        lat = convert_to_decimal(lat_raw)
-                        lon = convert_to_decimal(lon_raw)
-                        return lat, lon
+                    if lat_raw and lon_raw and lat_hemisphere and lon_hemisphere:
+                        lat = convert_to_decimal(lat_raw, lat_hemisphere, is_latitude=True)
+                        lon = convert_to_decimal(lon_raw, lon_hemisphere, is_latitude=False)
+                        if lat is not None and lon is not None:
+                            return lat, lon
             time.sleep(1)
     except Exception as e:
         print("GPS Error:", e)
+        return None, None
 
-    return None, None
 
-def convert_to_decimal(coord_str):
-    try:
-        degrees = int(coord_str[:2])
-        minutes = float(coord_str[2:])
-        return degrees + (minutes / 60)
-    except:
-        return None
 
 def transform_img(img):
     resize = 224
@@ -100,23 +120,46 @@ def capture(cap):
         if ret:
             return frame
 
-def send_image(q):
+def send_image():
+    image_extensions = {'.jpg', '.jpeg', '.png'}
+    api_url="https://projects.iec-uit.com/ResEViTRoad/api/upload-image/"
     while True:
-        if not q.empty():
-            file=q.get()
-            try:
-                response = requests.post("https://c68c-42-112-71-211.ngrok-free.app/upload-image/", files=file)
-                response.raise_for_status()  # Raise HTTPError for bad responses (4xx or 5xx)
-                # print("Upload status:", response.status_code)
-            except requests.exceptions.RequestException as e:
-                print("Error sending image:", e)
+        file_list = [
+            filename for filename in os.listdir("cache")
+            if os.path.isfile(os.path.join("cache", filename))
+        ]
+        sorted_files = sorted(
+            file_list,
+            key=lambda x: float(os.path.splitext(x)[0])
+        )
+        for filename in sorted_files:
+            file_path = os.path.join("cache", filename)
+            if os.path.isfile(file_path) and os.path.splitext(filename)[1].lower() in image_extensions:
+                with open(file_path, 'rb') as f:
+                    files = {'file': (filename, f, 'image/jpeg')}
+                    try:
+                        response = requests.post(api_url, files=files)
+                        if response.status_code == 200:
+                           os.remove(file_path)
+                        else:
+                            print(f"Failed to upload {filename}: {response.status_code}")
+                    except Exception as e:
+                        print(f"⚠Error uploading {filename}: {e}")
+def save_to_cache(files):
+    filename, file_buffer, _ = files['file']
+    file_buffer.seek(0)
+
+    filepath = os.path.join("cache",filename)
+    with open(filepath, 'wb') as f:
+        f.write(file_buffer.read())
+
 
 
 if __name__ == '__main__':
     print("Begin")
-    model = ResEViT_road_cls(num_classes=2)
+    model = ResEViT_road_cls(num_classes=7)
     model.to(device)
-    check_point=torch.load("resevit_road_standard_CRDDC-04-21--10-29-state_dict.pt")
+    check_point=torch.load("resevit_road_standard_Road_CLS_Quality-06-23--15-40-state_dict.pt")
 
     cleaned_state_dict = OrderedDict()
     for k, v in check_point.items():
@@ -139,17 +182,15 @@ if __name__ == '__main__':
         _ = predict(model, img_tensor)
 
     # Inference loop
-    q=Queue()
-    p1 = Process(target=send_image, args=(q,))
+    p1 = Process(target=send_image)
     p1.start()
-    for _ in tqdm(range(500)):
+    print("Running")
+    while True:
         location = get_gps_location()
         frame = capture(cap)
         img_tensor = transform_img(frame)
         pred = predict(model, img_tensor)
-        if pred==0:
-            file=add_metadata(frame,pred,location)
-            q.put(file)
-    p1.join()
-
-    print("End")
+        if pred in [0,2,4,5]:
+            files=add_metadata(frame,pred,location)
+            save_to_cache(files)
+        time.sleep(0.2)

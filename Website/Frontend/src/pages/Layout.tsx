@@ -12,7 +12,7 @@ export const Layout = () => {
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto px-6 py-4 max-w-7xl mx-auto w-full">
-        <Outlet /> {/* 👈 Quan trọng để hiện nội dung các page */}
+        <Outlet /> 
       </main>
 
       {/* Footer */}

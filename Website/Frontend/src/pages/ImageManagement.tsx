@@ -2,19 +2,7 @@ import { useState, useEffect } from "react";
 import axiosRequest from "../config/axios.config";
 import { parseLocation } from "../config/location.config";
 import { timestampToDate } from "../config/timestamp.config";
-import {
-  FaClock,
-  FaMapMarkerAlt,
-  FaBrain,
-  FaFileImage,
-  FaSearch,
-  FaFilter,
-  FaTimes,
-  FaChevronLeft,
-  FaChevronRight,
-  FaSyncAlt,
-  FaCalendarAlt,
-} from "react-icons/fa";
+import { FaClock, FaMapMarkerAlt, FaBrain, FaFileImage, FaSearch, FaFilter, FaTimes, FaChevronLeft, FaChevronRight, FaSyncAlt, FaCalendarAlt} from "react-icons/fa";
 
 type ImageItem = {
   filename: string;
@@ -22,6 +10,37 @@ type ImageItem = {
     Prediction?: string;
     Location?: string;
   };
+};
+
+const PREDICTION_COLORS = {
+  "Asphalt bad": "#EF4444",
+  "Paved bad": "#F59E0B", 
+  "Unpaved bad": "#8B5CF6",
+  "Rain": "#3B82F6",
+};
+
+const getPredictionColor = (prediction: string) => {
+  return PREDICTION_COLORS[prediction as keyof typeof PREDICTION_COLORS] || "#6B7280";
+};
+
+const getPredictionBgColor = (prediction: string) => {
+  const colorMap = {
+    "Asphalt bad": "#FEF2F2",
+    "Paved bad": "#FFFBEB",
+    "Unpaved bad": "#F5F3FF", 
+    "Rain": "#EFF6FF",
+  };
+  return colorMap[prediction as keyof typeof colorMap] || "#F9FAFB";
+};
+
+const getPredictionTextColor = (prediction: string) => {
+  const colorMap = {
+    "Asphalt bad": "#991B1B",
+    "Paved bad": "#92400E",
+    "Unpaved bad": "#5B21B6",
+    "Rain": "#1E40AF",
+  };
+  return colorMap[prediction as keyof typeof colorMap] || "#374151";
 };
 
 export default function ImageManagement() {
@@ -63,25 +82,18 @@ export default function ImageManagement() {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  // Parse timestamp from filename format "00:42:45 07/05/2025"
+  // Parse timestamp from filename format
   const parseTimestamp = (filename: string): Date | null => {
     try {
-      // Extract the timestamp part from the filename
       const timestampStr = timestampToDate(filename);
       if (!timestampStr) return null;
       
-      // Parse the date string format "00:42:45 07/05/2025"
       const [timePart, datePart] = timestampStr.split(' ');
       if (!datePart) return null;
       
-      // Parse date in format DD/MM/YYYY
       const [day, month, year] = datePart.split('/').map(num => parseInt(num, 10));
-      
-      // Parse time in format HH:MM:SS
       const [hours, minutes, seconds] = timePart.split(':').map(num => parseInt(num, 10));
-      
-      // Create and return a date object
-      // Note: JavaScript months are 0-indexed (0 = January, 11 = December)
+
       return new Date(year, month - 1, day, hours, minutes, seconds);
     } catch (error) {
       console.error("Error parsing timestamp:", error);
@@ -93,28 +105,41 @@ export default function ImageManagement() {
   const isDateInRange = (filename: string): boolean => {
     if (!startDate && !endDate) return true;
     
-    // Parse the timestamp from the filename
     const date = parseTimestamp(filename);
-    if (!date) return true; // If parsing fails, don't filter it out
+    if (!date) return true;
     
     const start = startDate ? new Date(startDate) : null;
     const end = endDate ? new Date(endDate) : null;
     
     if (start) {
-      // Set start date to beginning of the day for inclusive filtering
       const startOfDay = new Date(start);
       startOfDay.setHours(0, 0, 0, 0);
       if (date < startOfDay) return false;
     }
     
     if (end) {
-      // Set end date to end of the day for inclusive filtering
       const endOfDay = new Date(end);
       endOfDay.setHours(23, 59, 59, 999);
       if (date > endOfDay) return false;
     }
     
     return true;
+  };
+
+  const sortImagesByTimestamp = (imageList: ImageItem[]): ImageItem[] => {
+    return [...imageList].sort((a, b) => {
+      const dateA = parseTimestamp(a.filename);
+      const dateB = parseTimestamp(b.filename);
+      
+      if (dateA && dateB) {
+        return dateB.getTime() - dateA.getTime();
+      }
+      
+      if (dateA && !dateB) return -1;
+      if (!dateA && dateB) return 1;
+      
+      return a.filename.localeCompare(b.filename);
+    });
   };
 
   // Filter images based on search term and date range
@@ -126,19 +151,17 @@ export default function ImageManagement() {
         img.filename.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
     if (startDate || endDate) {
       results = results.filter((img) => isDateInRange(img.filename));
     }
 
+    results = sortImagesByTimestamp(results);
     setFilteredImages(results);
-    setCurrentPage(1); // Reset to first page when filters change
+    setCurrentPage(1); 
   }, [searchTerm, startDate, endDate, images]);
 
-  // Check if any date filters are active
   const isDateFilterActive = startDate || endDate;
 
-  // Calculate pagination
   const indexOfLastImage = currentPage * imagesPerPage;
   const indexOfFirstImage = indexOfLastImage - imagesPerPage;
   const currentImages = filteredImages.slice(
@@ -151,14 +174,12 @@ export default function ImageManagement() {
     return `${axiosRequest.defaults.baseURL}get-image/${filename}`;
   };
 
-  // Handle pagination navigation
   const paginate = (pageNumber: number) => {
     if (pageNumber > 0 && pageNumber <= totalPages) {
       setCurrentPage(pageNumber);
     }
   };
 
-  // Handle image navigation in modal
   const navigateImages = (direction: "prev" | "next") => {
     if (!selectedImage) return;
 
@@ -229,7 +250,7 @@ export default function ImageManagement() {
 
   return (
     <div className="max-w-7xl mx-auto p-6">
-      {/* Header with stats and controls */}
+      {/* Header */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <div>
@@ -239,6 +260,9 @@ export default function ImageManagement() {
             <p className="text-gray-500 mt-1">
               {filteredImages.length} image
               {filteredImages.length !== 1 ? "s" : ""} available for analysis
+              <span className="text-xs ml-2 bg-blue-100 text-blue-800 px-2 py-0.5 rounded">
+                Sorted by newest first
+              </span>
             </p>
           </div>
 
@@ -350,14 +374,14 @@ export default function ImageManagement() {
                 {img.metadata?.Prediction && (
                   <div className="absolute top-3 right-3">
                     <span
-                      className={`
-                      px-2 py-1 text-xs font-bold uppercase rounded-full
-                      ${
-                        img.metadata.Prediction.toLowerCase() === "damaged"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-green-100 text-green-800"
-                      }
-                    `}
+                      className="px-2 py-1 text-xs font-bold uppercase rounded-full"
+                      style={{
+                        backgroundColor: getPredictionBgColor(img.metadata.Prediction),
+                        color: getPredictionTextColor(img.metadata.Prediction),
+                        borderWidth: '1px',
+                        borderStyle: 'solid',
+                        borderColor: getPredictionColor(img.metadata.Prediction) + '40'
+                      }}
                     >
                       {img.metadata.Prediction}
                     </span>
@@ -399,11 +423,8 @@ export default function ImageManagement() {
                           Analysis Result:
                         </span>
                         <div
-                          className={`font-semibold ${
-                            img.metadata.Prediction.toLowerCase() === "damaged"
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
+                          className="font-semibold"
+                          style={{ color: getPredictionColor(img.metadata.Prediction) }}
                         >
                           {img.metadata.Prediction}
                         </div>
@@ -590,12 +611,14 @@ export default function ImageManagement() {
                     <div>
                       <h3 className="text-sm text-gray-500">Analysis Result</h3>
                       <div
-                        className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium ${
-                          selectedImage.metadata.Prediction.toLowerCase() ===
-                          "damaged"
-                            ? "bg-red-100 text-red-800"
-                            : "bg-green-100 text-green-800"
-                        }`}
+                        className="inline-block mt-1 px-3 py-1 rounded-full text-sm font-medium"
+                        style={{
+                          backgroundColor: getPredictionBgColor(selectedImage.metadata.Prediction),
+                          color: getPredictionTextColor(selectedImage.metadata.Prediction),
+                          borderWidth: '1px',
+                          borderStyle: 'solid',
+                          borderColor: getPredictionColor(selectedImage.metadata.Prediction) + '40'
+                        }}
                       >
                         {selectedImage.metadata.Prediction}
                       </div>
